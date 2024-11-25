@@ -1,27 +1,69 @@
-# DataSharingDemo
+import { Injectable } from '@angular/core';
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.2.
+@Injectable({
+providedIn: 'root', // Ensures it's a singleton
+})
+export class FormDataService {
+private formData: any = {}; // Object to hold the form data for all steps
 
-## Development server
+// Save data for a specific step
+setFormData(step: number, data: any): void {
+this.formData[step] = data;
+}
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+// Retrieve data for a specific step
+getFormData(step: number): any {
+return this.formData[step] || {}; // Return empty object if no data
+}
 
-## Code scaffolding
+// Retrieve all form data (optional, for submission)
+getAllFormData(): any {
+return this.formData;
+}
+}
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+service code
 
-## Build
+component level code
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormDataService } from '../form-data.service';
 
-## Running unit tests
+@Component({
+selector: 'app-step1',
+template: `   <form [formGroup]="form" (ngSubmit)="onContinue()">
+      <label>First Name:</label>
+      <input formControlName="firstName" />
+      <label>Last Name:</label>
+      <input formControlName="lastName" />
+      <button type="submit">Continue</button>
+    </form>
+`,
+})
+export class Step1Component implements OnInit {
+form!: FormGroup;
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+constructor(private fb: FormBuilder, private formDataService: FormDataService) {}
 
-## Running end-to-end tests
+ngOnInit() {
+this.form = this.fb.group({
+firstName: [''],
+lastName: [''],
+});
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+    // Load saved data into the form
+    const savedData = this.formDataService.getFormData(1);
+    this.form.patchValue(savedData);
 
-## Further help
+}
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+onContinue() {
+// Save the form data
+this.formDataService.setFormData(1, this.form.value);
+
+    // Navigate to the next step
+    // (Use your router logic here)
+
+}
+}
